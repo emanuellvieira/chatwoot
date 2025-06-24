@@ -44,6 +44,36 @@ class ChatwootApp
     true
   end
 
+  # Método extensions necessário para o sistema de inicialização
+  def self.extensions
+    ['enterprise']
+  end
+
+  # Root path
+  def self.root
+    Pathname.new(File.expand_path('..', __dir__))
+  end
+
+  # Max limit
+  def self.max_limit
+    100_000
+  end
+
+  # Chatwoot cloud check
+  def self.chatwoot_cloud?
+    false
+  end
+
+  # Custom check
+  def self.custom?
+    false
+  end
+
+  # Help center root
+  def self.help_center_root
+    ENV.fetch('HELPCENTER_URL', nil) || ENV.fetch('FRONTEND_URL', nil)
+  end
+
   # Configurações enterprise
   def self.enterprise_config
     {
