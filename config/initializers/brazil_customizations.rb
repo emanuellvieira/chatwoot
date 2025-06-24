@@ -12,15 +12,8 @@ Rails.application.configure do
   ]
   
   # Configurações específicas para o Brasil
-  # Usa valores padrão caso o módulo não esteja disponível durante o build
-  begin
-    require_relative '../../app/brazil_customizations/brazil_config'
-    config.time_zone = BrazilCustomizations::Config::TIMEZONE
-  rescue LoadError, NameError
-    # Fallback para valores padrão durante o build
-    config.time_zone = 'America/Sao_Paulo'
-  end
-  
+  # Usa valores padrão durante o build
+  config.time_zone = 'America/Sao_Paulo'
   config.i18n.default_locale = :'pt-BR'
   config.i18n.available_locales = [:'pt-BR', :en]
   
