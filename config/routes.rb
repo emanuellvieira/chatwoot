@@ -269,7 +269,7 @@ Rails.application.routes.draw do
           resources :working_hours, only: [:update]
 
           # Rotas brasileiras para funcionalidades customizadas
-          namespace :brazil_conversations, only: [] do
+          resources :brazil_conversations, only: [] do
             collection do
               post :create_with_welcome
               post :send_welcome_message
