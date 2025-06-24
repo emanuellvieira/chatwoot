@@ -30,7 +30,7 @@
   premium: true
 - name: email_continuity_on_api_channel
   display_name: Email Continuity on API Channel
-  enabled: false
+  enabled: true
 - name: help_center
   display_name: Help Center
   enabled: true
@@ -100,28 +100,28 @@
   enabled: true
 - name: custom_reply_domain
   display_name: Custom Reply Domain
-  enabled: false
+  enabled: true
 - name: audit_logs
   display_name: Audit Logs
   enabled: true
   premium: true
 - name: response_bot
   display_name: Response Bot
-  enabled: false
+  enabled: true
   premium: true
   deprecated: true
 - name: message_reply_to
   display_name: Message Reply To
-  enabled: false
+  enabled: true
   help_url: https://chwt.app/hc/reply-to
   deprecated: true
 - name: insert_article_in_reply
   display_name: Insert Article in Reply
-  enabled: false
+  enabled: true
   deprecated: true
 - name: inbox_view
   display_name: Inbox View
-  enabled: false
+  enabled: true
   chatwoot_internal: true
 - name: sla
   display_name: SLA
@@ -153,19 +153,19 @@
   deprecated: true
 - name: contact_chatwoot_support_team
   display_name: Contact Chatwoot Support Team
-  enabled: true
+  enabled: false
   chatwoot_internal: true
 - name: shopify_integration
   display_name: Shopify Integration
-  enabled: false
+  enabled: true
   chatwoot_internal: true
 - name: search_with_gin
   display_name: Search messages with GIN
-  enabled: false
+  enabled: true
   chatwoot_internal: true
 - name: channel_instagram
   display_name: Instagram Channel
   enabled: true
 - name: crm_integration
   display_name: CRM Integration
-  enabled: false
+  enabled: true

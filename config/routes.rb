@@ -268,18 +268,6 @@ Rails.application.routes.draw do
           end
           resources :working_hours, only: [:update]
 
-          # Rotas brasileiras para funcionalidades customizadas
-          resources :brazil_conversations, only: [] do
-            collection do
-              post :create_with_welcome
-              post :send_welcome_message
-              post :auto_fill_contact
-              post :detect_intent
-              post :validate_phone
-              post :validate_document
-            end
-          end
-
           resources :portals do
             member do
               patch :archive

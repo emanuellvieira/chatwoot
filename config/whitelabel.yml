@@ -1,0 +1,54 @@
+# Enterprise Whitelabel Configuration
+# Configurações para versão independente do Chatwoot
+
+whitelabel:
+  # Informações da empresa
+  company:
+    name: "Enterprise Chatwoot"
+    website: "https://your-company.com"
+    support_email: "support@your-company.com"
+    logo_url: "/assets/logo.png"
+  
+  # Configurações do app
+  app:
+    name: "Enterprise Chatwoot"
+    version: "2.0.0-enterprise-whitelabel"
+    description: "Enterprise-grade customer messaging platform"
+    copyright: "© 2024 Your Company. All rights reserved."
+  
+  # Features habilitadas
+  features:
+    enterprise: true
+    premium: true
+    branding_disabled: true
+    audit_logs: true
+    sla: true
+    custom_roles: true
+    captain_integration: true
+    help_center: true
+    automations: true
+    crm: true
+    reports: true
+    campaigns: true
+    integrations: true
+  
+  # Configurações de branding
+  branding:
+    primary_color: "#1f2937"
+    secondary_color: "#3b82f6"
+    logo_alt_text: "Enterprise Chatwoot Logo"
+    favicon: "/assets/favicon.ico"
+  
+  # Configurações de segurança
+  security:
+    independent_installation: true
+    no_external_dependencies: true
+    enterprise_licensing: false
+    custom_authentication: true
+  
+  # Configurações de suporte
+  support:
+    contact_enabled: false
+    chatwoot_support_disabled: true
+    custom_support_team: true
+    documentation_url: "https://your-docs.com" 
