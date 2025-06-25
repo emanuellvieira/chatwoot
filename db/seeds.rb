@@ -4,9 +4,9 @@ ConfigLoader.new.process
 
 ## Seeds productions
 if Rails.env.production?
-  # Setup Onboarding flow - Only set if explicitly configured
-  # The onboarding key should be nil by default to allow first-time setup
-  # Redis::Alfred.set(Redis::Alfred::CHATWOOT_INSTALLATION_ONBOARDING, true)
+  # NÃO CRIE USUÁRIOS OU CONTAS EM PRODUÇÃO!
+  # NÃO SETE A CHAVE Redis::Alfred::CHATWOOT_INSTALLATION_ONBOARDING EM PRODUÇÃO!
+  # O onboarding padrão só funciona se não houver usuários e a chave não existir no Redis.
 end
 
 ## Seeds for Local Development
