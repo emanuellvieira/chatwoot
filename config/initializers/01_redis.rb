@@ -20,12 +20,18 @@ end
 # Configure Rails cache store to avoid redis-namespace blind passthrough issues
 # This is needed for Rails 7.1+ compatibility with redis-namespace
 if Rails.env.production?
-  # Use a separate Redis connection for Rails cache to avoid namespace conflicts
-  cache_redis = Redis.new(Redis::Config.app)
-  Rails.application.config.cache_store = :redis_cache_store, {
-    redis: cache_redis,
-    pool: false, # Disable Rails internal pooling since we're using a direct connection
-    expires_in: 1.day,
-    namespace: 'chatwoot_cache'
-  }
+  begin
+    # Use a separate Redis connection for Rails cache to avoid namespace conflicts
+    cache_redis = Redis.new(Redis::Config.app)
+    Rails.application.config.cache_store = :redis_cache_store, {
+      redis: cache_redis,
+      pool: false, # Disable Rails internal pooling since we're using a direct connection
+      expires_in: 1.day,
+      namespace: 'chatwoot_cache'
+    }
+  rescue => e
+    # Fallback to memory store if Redis is not available during build
+    Rails.logger.warn "Could not configure Redis cache store: #{e.message}. Using memory store as fallback."
+    Rails.application.config.cache_store = :memory_store
+  end
 end

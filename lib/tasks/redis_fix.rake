@@ -3,35 +3,45 @@ namespace :redis do
   task fix_onboarding: :environment do
     puts "Checking Redis onboarding status..."
     
-    # Check if onboarding key exists
-    onboarding_key = Redis::Alfred::CHATWOOT_INSTALLATION_ONBOARDING
-    current_value = Redis::Alfred.get(onboarding_key)
-    
-    puts "Current onboarding key value: #{current_value}"
-    
-    if current_value.nil?
-      puts "Onboarding key is not set. Setting it to true..."
-      Redis::Alfred.set(onboarding_key, true)
-      puts "Onboarding key has been set to true"
-    else
-      puts "Onboarding key is already set to: #{current_value}"
+    begin
+      # Check if onboarding key exists
+      onboarding_key = Redis::Alfred::CHATWOOT_INSTALLATION_ONBOARDING
+      current_value = Redis::Alfred.get(onboarding_key)
+      
+      puts "Current onboarding key value: #{current_value}"
+      
+      if current_value.nil?
+        puts "Onboarding key is not set. Setting it to true..."
+        Redis::Alfred.set(onboarding_key, true)
+        puts "Onboarding key has been set to true"
+      else
+        puts "Onboarding key is already set to: #{current_value}"
+      end
+      
+      # Clear any problematic cache keys that might be causing issues
+      puts "Clearing GlobalConfig cache..."
+      GlobalConfig.clear_cache
+      
+      puts "Redis onboarding fix completed!"
+    rescue => e
+      puts "Warning: Could not complete Redis onboarding fix: #{e.message}"
+      puts "This is normal during build process when Redis is not available"
     end
-    
-    # Clear any problematic cache keys that might be causing issues
-    puts "Clearing GlobalConfig cache..."
-    GlobalConfig.clear_cache
-    
-    puts "Redis onboarding fix completed!"
   end
 
   desc "Reset onboarding state (use with caution)"
   task reset_onboarding: :environment do
     puts "Resetting onboarding state..."
     
-    onboarding_key = Redis::Alfred::CHATWOOT_INSTALLATION_ONBOARDING
-    Redis::Alfred.delete(onboarding_key)
-    
-    puts "Onboarding state has been reset. You can now access the onboarding page again."
+    begin
+      onboarding_key = Redis::Alfred::CHATWOOT_INSTALLATION_ONBOARDING
+      Redis::Alfred.delete(onboarding_key)
+      
+      puts "Onboarding state has been reset. You can now access the onboarding page again."
+    rescue => e
+      puts "Warning: Could not reset onboarding state: #{e.message}"
+      puts "This is normal during build process when Redis is not available"
+    end
   end
 
   desc "Check Redis connection and configuration"
