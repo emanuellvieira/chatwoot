@@ -13,7 +13,7 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
 
   before_action :check_authorization
   before_action :set_current_page, only: [:index, :active, :search, :filter]
-  before_action :fetch_contact, only: [:show, :update, :destroy, :avatar, :contactable_inboxes, :destroy_custom_attributes]
+  before_action :fetch_contact, only: [:show, :update, :destroy, :avatar, :contactable_inboxes, :destroy_custom_attributes, :sync_to_hubspot, :find_in_hubspot]
   before_action :set_include_contact_inboxes, only: [:index, :active, :search, :filter, :show, :update]
 
   def index
@@ -90,6 +90,9 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
       @contact.save!
       @contact_inbox = build_contact_inbox
       process_avatar_from_url
+      
+      # Sync to HubSpot if integration is enabled
+      sync_contact_to_hubspot_async(@contact)
     end
   end
 
@@ -97,6 +100,9 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
     @contact.assign_attributes(contact_update_params)
     @contact.save!
     process_avatar_from_url
+    
+    # Sync to HubSpot if integration is enabled
+    sync_contact_to_hubspot_async(@contact)
   end
 
   def destroy
@@ -114,6 +120,51 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
   def avatar
     @contact.avatar.purge if @contact.avatar.attached?
     @contact
+  end
+
+  # HubSpot Integration Methods
+  def sync_to_hubspot
+    return render_error({ message: 'HubSpot integration not configured' }, :unprocessable_entity) unless hubspot_integration_enabled?
+
+    processor = Crm::Hubspot::ProcessorService.new(Current.account)
+    hubspot_id = processor.sync_contact(@contact)
+    
+    if hubspot_id
+      render json: { 
+        success: true, 
+        message: 'Contact synced to HubSpot successfully',
+        hubspot_id: hubspot_id,
+        hubspot_url: "https://app.hubspot.com/contacts/#{hubspot_id}"
+      }
+    else
+      render_error({ message: 'Failed to sync contact to HubSpot' }, :unprocessable_entity)
+    end
+  rescue => e
+    render_error({ message: "Error syncing to HubSpot: #{e.message}" }, :unprocessable_entity)
+  end
+
+  def find_in_hubspot
+    return render_error({ message: 'HubSpot integration not configured' }, :unprocessable_entity) unless hubspot_integration_enabled?
+
+    finder = Crm::Hubspot::ContactFinderService.new(Current.account)
+    hubspot_contact = finder.find_contact(@contact)
+    
+    if hubspot_contact
+      render json: { 
+        success: true, 
+        found: true,
+        hubspot_contact: hubspot_contact,
+        hubspot_url: "https://app.hubspot.com/contacts/#{hubspot_contact['id']}"
+      }
+    else
+      render json: { 
+        success: true, 
+        found: false,
+        message: 'Contact not found in HubSpot'
+      }
+    end
+  rescue => e
+    render_error({ message: "Error searching in HubSpot: #{e.message}" }, :unprocessable_entity)
   end
 
   private
@@ -193,5 +244,20 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
 
   def render_error(error, error_status)
     render json: error, status: error_status
+  end
+
+  # HubSpot Integration Helpers
+  def hubspot_integration_enabled?
+    Current.account.integration_hooks.exists?(app_id: 'hubspot')
+  end
+
+  def sync_contact_to_hubspot_async(contact)
+    return unless hubspot_integration_enabled?
+    
+    Crm::HubspotSyncJob.perform_later(
+      Current.account.id, 
+      'sync_contact', 
+      { 'contact_id' => contact.id }
+    )
   end
 end

@@ -278,3 +278,99 @@ leadsquared:
       'conversation_activity_score',
       'transcript_activity_score',
     ]
+
+hubspot:
+  id: hubspot
+  feature_flag: crm_integration
+  logo: hubspot.png
+  i18n_key: hubspot
+  action: /hubspot
+  hook_type: account
+  allow_multiple_hooks: false
+  settings_json_schema:
+    {
+      'type': 'object',
+      'properties':
+        {
+          'access_token': { 'type': 'string' },
+          'refresh_token': { 'type': 'string' },
+          'client_id': { 'type': 'string' },
+          'client_secret': { 'type': 'string' },
+          'portal_id': { 'type': 'string' },
+          'enable_contact_sync': { 'type': 'boolean' },
+          'enable_conversation_activity': { 'type': 'boolean' },
+          'enable_transcript_activity': { 'type': 'boolean' },
+          'enable_deal_creation': { 'type': 'boolean' },
+          'enable_whatsapp_sync': { 'type': 'boolean' },
+          'whatsapp_property_name': { 'type': 'string' },
+          'contact_properties': { 'type': 'array' },
+          'deal_pipeline_id': { 'type': 'string' },
+          'deal_stage_id': { 'type': 'string' }
+        },
+      'required': ['access_token', 'portal_id'],
+      'additionalProperties': false
+    }
+  settings_form_schema:
+    [
+      {
+        'label': 'Access Token',
+        'type': 'text',
+        'name': 'access_token',
+        'validation': 'required',
+        'help': 'Your HubSpot OAuth access token'
+      },
+      {
+        'label': 'Portal ID',
+        'type': 'text',
+        'name': 'portal_id',
+        'validation': 'required',
+        'help': 'Your HubSpot Portal ID (found in your HubSpot account settings)'
+      },
+      {
+        'label': 'Sync Contacts to HubSpot',
+        'type': 'checkbox',
+        'name': 'enable_contact_sync',
+        'help': 'Automatically sync Chatwoot contacts to HubSpot'
+      },
+      {
+        'label': 'Enable WhatsApp Sync',
+        'type': 'checkbox',
+        'name': 'enable_whatsapp_sync',
+        'help': 'Sync WhatsApp numbers using the whatsapp_api property'
+      },
+      {
+        'label': 'WhatsApp Property Name',
+        'type': 'text',
+        'name': 'whatsapp_property_name',
+        'default': 'whatsapp_api',
+        'help': 'HubSpot property name for WhatsApp numbers (default: whatsapp_api)'
+      },
+      {
+        'label': 'Create Conversation Activities',
+        'type': 'checkbox',
+        'name': 'enable_conversation_activity',
+        'help': 'Create activities in HubSpot when conversations are created'
+      },
+      {
+        'label': 'Create Transcript Activities',
+        'type': 'checkbox',
+        'name': 'enable_transcript_activity',
+        'help': 'Create activities in HubSpot when conversations are resolved'
+      },
+      {
+        'label': 'Create Deals for Conversations',
+        'type': 'checkbox',
+        'name': 'enable_deal_creation',
+        'help': 'Automatically create deals for qualified conversations'
+      }
+    ]
+  visible_properties:
+    [
+      'portal_id',
+      'enable_contact_sync',
+      'enable_whatsapp_sync',
+      'whatsapp_property_name',
+      'enable_conversation_activity',
+      'enable_transcript_activity',
+      'enable_deal_creation'
+    ]

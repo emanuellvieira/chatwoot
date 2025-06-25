@@ -153,6 +153,8 @@ Rails.application.routes.draw do
               get :contactable_inboxes
               post :destroy_custom_attributes
               delete :avatar
+              post :sync_to_hubspot
+              get :find_in_hubspot
             end
             scope module: :contacts do
               resources :conversations, only: [:index]
@@ -263,6 +265,12 @@ Rails.application.routes.draw do
                 post :unlink_issue
                 get :search_issue
                 get :linked_issues
+              end
+            end
+            resource :hubspot, controller: 'hubspot', only: [:create, :update, :destroy] do
+              collection do
+                post :test_connection
+                get :get_pipelines
               end
             end
           end
