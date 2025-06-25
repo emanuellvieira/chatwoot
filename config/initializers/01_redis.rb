@@ -16,3 +16,16 @@ $velma = ConnectionPool.new(size: 5, timeout: 1) do
   config = Rails.env.test? ? MockRedis.new : Redis.new(Redis::Config.app)
   Redis::Namespace.new('velma', redis: config, warning: true)
 end
+
+# Configure Rails cache store to avoid redis-namespace blind passthrough issues
+# This is needed for Rails 7.1+ compatibility with redis-namespace
+if Rails.env.production?
+  # Use a separate Redis connection for Rails cache to avoid namespace conflicts
+  cache_redis = Redis.new(Redis::Config.app)
+  Rails.application.config.cache_store = :redis_cache_store, {
+    redis: cache_redis,
+    pool: false, # Disable Rails internal pooling since we're using a direct connection
+    expires_in: 1.day,
+    namespace: 'chatwoot_cache'
+  }
+end
