@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  chatwoot:
+    image: seu-registry/chatwoot-custom:latest
+    # Para build local, descomente as linhas abaixo:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile.custom
+    #   args:
+    #     RAILS_ENV: production
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - RAILS_ENV=production
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/chatwoot
+      - REDIS_URL=redis://:password@redis:6379/0
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - INSTALLATION_ENV=docker_custom
+      - ENABLE_ACCOUNT_SIGNUP=true
+      - RAILS_LOG_TO_STDOUT=true
+      - RAILS_SERVE_STATIC_FILES=true
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - storage_data:/app/storage
+      - uploads_data:/app/public/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      # Aguardar banco estar pronto
+      echo 'Waiting for database...'
+      while ! pg_isready -h postgres -p 5432 -U postgres; do
+        sleep 2
+      done
+      
+      # Executar migrações
+      echo 'Running migrations...'
+      bundle exec rake db:migrate
+      
+      # Verificar e configurar onboarding
+      echo 'Checking onboarding status...'
+      bundle exec rake onboarding:enable
+      
+      # Iniciar aplicação
+      echo 'Starting application...'
+      bundle exec rails s -p 3000 -b 0.0.0.0
+      "
+
+  sidekiq:
+    image: seu-registry/chatwoot-custom:latest
+    restart: unless-stopped
+    environment:
+      - RAILS_ENV=production
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/chatwoot
+      - REDIS_URL=redis://:password@redis:6379/0
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - INSTALLATION_ENV=docker_custom
+      - RAILS_LOG_TO_STDOUT=true
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - storage_data:/app/storage
+    command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "sidekiq"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=chatwoot
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "password"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    ports:
+      - "127.0.0.1:6379:6379"
+
+volumes:
+  postgres_data:
+  redis_data:
+  storage_data:
+  uploads_data: 
